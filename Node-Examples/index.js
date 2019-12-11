@@ -1,13 +1,14 @@
 var rect = require("./rectangle")
 
 var solve = function(l,b){
-    console.log(l+" "+b);
-    if(l>=0 || b>=0){
-    console.log("perimeter :: "+rect.perimiter(l,b));
-    console.log("area :: "+rect.area(l,b)+"\n");}
-    else{
-        console.log("no value is taken less than zero.");
-    }
+    console.log("for length: and breadth:  "+l+" "+b);
+    rect(l,b,(err,rectangle) => {
+        if(err){ console.log(err.message) }
+        else{
+            console.log("perimeter :: "+rectangle.perimeter());
+            console.log("area :: "+rectangle.area());
+        }
+    });
 }
 
 solve(2,3);
