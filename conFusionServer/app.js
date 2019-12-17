@@ -3,6 +3,16 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const mongoose = require('mongoose');
+const Dishes = require('./node_models/dishes');
+
+const url = "mongodb+srv://root:root@cluster0-6jtqj.mongodb.net/test?retryWrites=true&w=majority";
+const connect = mongoose.connect(url);
+
+connect.then((db) => {
+  console.log("connected to the server........................................");  
+},(err) => { console.log("error while connecting to server :: ",err); });
+
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');

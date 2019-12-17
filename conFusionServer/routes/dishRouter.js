@@ -1,51 +1,80 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const Dishes = require('../node_models/dishes');
+const mongoose = require('mongoose');
+
 
 const dishRouter = express.Router();
 dishRouter.use(bodyParser.json());
 
 dishRouter.route('/')
-.all((req,res,next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-type','text/plain');
-    next();
-})
 .get((req,res,next) => {
-    res.end("Here get method is invoked from the server. get method is working fine.");
+    Dishes.find({})
+    .then((dishes) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(dishes);
+    },(err) => next(err))
+    .catch((err) => next(err));
 })
 .post((req,res,next) => {
-    res.statusCode = 201;
-    res.end(`Here post method is invoked from the server. post method is working fine. ${req.body} is the data in the post method that is sent by the user.`);
+    Dishes.create(req.body)
+    .then((dishes) => {
+        console.log("CREATED SUCCESFULLY :::::::::::");
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(dishes);
+    },(err) => next(err))
+    .catch((err) => next(err));    
 })
 .put((req,res,next) => {
-    res.statusCode = 403;
-    res.end("Here PUT method is invoked from the server. PUT method is working fine.");
+    res.end("PUT method is not allowed at \\dishes");
 })
 .delete((req,res,next) => {
-    res.statusCode = 678;
-    res.end("Here DELETE method is invoked from the server. DELETE method is working fine.");
+Dishes.remove({})
+.then((resp) => {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json(resp);
+},(err) => next(err))
+.catch((err) => next(err));
 });
 
+
+
+
 dishRouter.route('/:dishId')
-.all((req,res,next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-type','text/plain');
-    next();
-})
 .get((req,res,next) => {
-    res.end("Here get method is invoked from the server. get method is working fine. Dish ID is :: "+req.params.dishId);
+    Dishes.findById(req.params.dishId)
+    .then((dish) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(dish);
+    },(err) => next(err))
+    .catch((err) =>next(err));    
 })
 .post((req,res,next) => {
-    res.statusCode = 201;
-    res.end(`Here post method is invoked from the server. post method is working fine. ${req.body} is the data in the post method that is sent by the user. Dish ID is :: ${req.params.dishId}`);
+    res.end(`POST operation is not supported on \dishes\ ${req.params.dishId}`);
 })
 .put((req,res,next) => {
-    res.statusCode = 403;
-    res.end("Here PUT method is invoked from the server. PUT method is working fine. Dish ID is :: "+req.params.dishId);
+    Dishes.findByIdAndUpdate(req.params.dishId,{$set : req.body},{ new:true})
+    .then((dish) => {
+        console.log("UPDATED SUCCESFULLY :::::::::::");
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(dish);
+    },(err) => next(err))
+    .catch((err) => next(err));    
 })
 .delete((req,res,next) => {
-    res.statusCode = 678;
-    res.end("Here DELETE method is invoked from the server. DELETE method is working fine. Dish ID is :: "+req.params.dishId);
+    Dishes.findByIdAndRemove(req.params.dishId)
+    .then((resp) => {
+        console.log("DELETED SUCCESFULLY :::::::::::");
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(dish);
+    },(err) => next(err))
+    .catch((err) => next(err));
 });
 
 
