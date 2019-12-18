@@ -3,49 +3,70 @@ const bodyParser = require('body-parser');
 
 const promoRouter = express.Router();
 promoRouter.use(bodyParser.json());
+const Promos = require('../node_models/promos');
 
 promoRouter.route('/')
-.all((req,res,next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-type','text/plain');
-    next();
-})
-.get((req,res,next) => {
-    res.end("Promo :: Here get method is invoked from the server. get method is working fine.");
+.get((req,res,next) =>{
+    Promos.find({})
+    .then((promos) => {
+        res.statusCode = 200;
+        res.setHeader('Content-type','application/json');
+        res.json(promos);
+    },(err) => next(err))
+    .catch((err) => next(err));    
 })
 .post((req,res,next) => {
-    res.statusCode = 201;
-    res.end(`Promo :: Here post method is invoked from the server. post method is working fine. ${req.body} is the data in the post method that is sent by the user.`);
+    Promos.create(req.body)
+    .then((promos) => {
+        res.statusCode = 201;
+        res.setHeader('Content-type','application/json');
+        res.json(promos);
+    },(err) => next(err))
+    .catch((err) => next(err));  
 })
-.put((req,res,next) => {
-    res.statusCode = 403;
-    res.end("Promo :: Here PUT method is invoked from the server. PUT method is working fine.");
+.put((req,res,next) =>{
+    res.end("PUT method is not allowed at /promo/");
 })
 .delete((req,res,next) => {
-    res.statusCode = 678;
-    res.end("Promo :: Here DELETE method is invoked from the server. DELETE method is working fine.");
+   Promos.remove({})
+   .then((resp) =>{
+    res.statusCode = 201;
+    res.setHeader('Content-type','application/json');
+    res.json(resp);
+},(err) => next(err))
+.catch((err) => next(err));
 });
 
 promoRouter.route('/:promoId')
-.all((req,res,next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-type','text/plain');
-    next();
-})
-.get((req,res,next) => {
-    res.end("Promo ID:: Here get method is invoked from the server. get method is working fine. promo ID is :: "+req.params.promoId);
+.get((req,res,next) =>{
+    Promos.findById(req.params.promoId)
+    .then((promos) => {
+        res.statusCode = 200;
+        res.setHeader('Content-type','application/json');
+        res.json(promos);
+    },(err) => next(err))
+    .catch((err) => next(err));    
 })
 .post((req,res,next) => {
-    res.statusCode = 201;
-    res.end(`Promo ID:: Here post method is invoked from the server. post method is working fine. ${req.body} is the data in the post method that is sent by the user. Dish ID is :: ${req.params.promoId}`);
+    res.end("POST method is not allowed at /promo/"+req.params.promoId);  
 })
-.put((req,res,next) => {
-    res.statusCode = 403;
-    res.end("Promo ID:: Here PUT method is invoked from the server. PUT method is working fine. Promo ID is :: "+req.params.promoId);
+.put((req,res,next) =>{
+    Promos.findByIdAndUpdate(req.params.promoId,{ $set : req.body},{new : true})
+    .then((promos) => {
+        res.statusCode = 200;
+        res.setHeader('Content-type','application/json');
+        res.json(promos);
+    },(err) => next(err))
+    .catch((err) => next(err));
 })
 .delete((req,res,next) => {
-    res.statusCode = 678;
-    res.end("Promo ID:: Here DELETE method is invoked from the server. DELETE method is working fine. Promo ID is :: "+req.params.promoId);
+   Promos.findByIdAndRemove(req.params.promoId)
+   .then((resp) =>{
+    res.statusCode = 201;
+    res.setHeader('Content-type','application/json');
+    res.json(resp);
+},(err) => next(err))
+.catch((err) => next(err));
 });
 
 

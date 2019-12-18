@@ -3,43 +3,70 @@ const bodyParser = require('body-parser');
 
 const leaderRouter = express.Router();
 leaderRouter.use(bodyParser.json());
+const Leaders = require('../node_models/leaders');
 
 leaderRouter.route('/')
-.all( (req,res,next) => {
-    res.statusCode=200;
-    res.setHeader('Content-type','text/plain');
-    next();
-})
 .get((req,res,next) =>{
-    res.end("Leader :: this is GET method of leader url.");
+    Leaders.find({})
+    .then((leaders) => {
+        res.statusCode = 200;
+        res.setHeader('Content-type','application/json');
+        res.json(leaders);
+    },(err) => next(err))
+    .catch((err) => next(err));    
 })
 .post((req,res,next) => {
-    res.end(`Leader :: this is POST method of leader url. Body data is ${req.body}`);
+    Leaders.create(req.body)
+    .then((leaders) => {
+        res.statusCode = 201;
+        res.setHeader('Content-type','application/json');
+        res.json(leaders);
+    },(err) => next(err))
+    .catch((err) => next(err));  
 })
 .put((req,res,next) =>{
-    res.end("Leader :: this is PUT method of leader url.");
+    res.end("PUT method is not allowed at /leaders/");
 })
 .delete((req,res,next) => {
-    res.end("Leader :: this is DELETE method of leader url.");
+   Leaders.remove({})
+   .then((resp) =>{
+    res.statusCode = 201;
+    res.setHeader('Content-type','application/json');
+    res.json(resp);
+},(err) => next(err))
+.catch((err) => next(err));
 });
 
 leaderRouter.route('/:leaderId')
-.all( (req,res,next) => {
-    res.statusCode=200;
-    res.setHeader('Content-type','text/plain');
-    next();
-})
 .get((req,res,next) =>{
-    res.end("Leader ID :: this is GET method of leader url.Leader ID is "+req.params.leaderId);
+    Leaders.findById(req.params.leaderId)
+    .then((leader) => {
+        res.statusCode = 200;
+        res.setHeader('Content-type','application/json');
+        res.json(leader);
+    },(err) => next(err))
+    .catch((err) => next(err));    
 })
 .post((req,res,next) => {
-    res.end(`Leader ID :: this is POST method of leader url. Body data is ${req.body}.Leader ID is ${req.params.leaderId}`);
+    res.end("POST method is not allowed at /leaders/"+req.params.leaderId);  
 })
 .put((req,res,next) =>{
-    res.end("Leader ID :: this is PUT method of leader url.Leader ID is "+req.params.leaderId);
+    Leaders.findByIdAndUpdate(req.params.leaderId,{ $set : req.body},{new : true})
+    .then((leader) => {
+        res.statusCode = 200;
+        res.setHeader('Content-type','application/json');
+        res.json(leader);
+    },(err) => next(err))
+    .catch((err) => next(err));
 })
 .delete((req,res,next) => {
-    res.end("Leader ID :: this is DELETE method of leader url.Leader ID is "+req.params.leaderId);
+   Leaders.findByIdAndRemove(req.params.leaderId)
+   .then((resp) =>{
+    res.statusCode = 201;
+    res.setHeader('Content-type','application/json');
+    res.json(resp);
+},(err) => next(err))
+.catch((err) => next(err));
 });
 
 module.exports = leaderRouter;
