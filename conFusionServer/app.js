@@ -8,9 +8,9 @@ var FileStore = require('session-file-store')(session);
 const mongoose = require('mongoose');
 var passport = require('passport');
 var authenticate = require('./authenticate');
+var config = require('./config');
 
-
-const url = "mongodb+srv://root:root@cluster0-6jtqj.mongodb.net/test?retryWrites=true&w=majority";
+const url = config.mongoURL;
 const connect = mongoose.connect(url);
 
 connect.then((db) => {
@@ -36,31 +36,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 //app.use(cookieParser('1234567890'));
 
-app.use(session({
-  name: 'session-id',
-  secret: '12345-67890-09876-54321',
-  saveUninitialized: false,
-  resave: false,
-  store: new FileStore()
-}));
+
 app.use(passport.initialize());
-app.use(passport.session());
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-var auth = function(req,res,next){
-  console.log(req.user);
-
-  if (!req.user) {
-    var err = new Error('You are not authenticated!');
-    err.status = 403;
-    next(err);
-  }
-  else {
-        next();
-  }
-}
-app.use(auth);
 
 
 
