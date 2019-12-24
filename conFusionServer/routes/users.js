@@ -8,9 +8,15 @@ var authenticate = require('../authenticate');
 var passport = require('passport');
 
 /* GET users listing. */
-router.get('',(req,res,next)=>{
- res.statusCode =200;
- res.end("you are in users");
+router.get('',authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
+ User.find({})
+ .then((users)=>{
+  res.statusCode =200;
+  res.setHeader('Content-type','application/json');
+  res.json(users);
+ },(err) => next(err))
+ .catch((err) => next(err));
+ 
 });
 
 

@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const leaderRouter = express.Router();
 leaderRouter.use(bodyParser.json());
 const Leaders = require('../node_models/leaders');
+const authenticate = require('../authenticate');
 
 leaderRouter.route('/')
 .get((req,res,next) =>{
@@ -15,7 +16,7 @@ leaderRouter.route('/')
     },(err) => next(err))
     .catch((err) => next(err));    
 })
-.post((req,res,next) => {
+.post(authenticate.verifyUser,(req,res,next) => {
     Leaders.create(req.body)
     .then((leaders) => {
         res.statusCode = 201;
@@ -24,10 +25,10 @@ leaderRouter.route('/')
     },(err) => next(err))
     .catch((err) => next(err));  
 })
-.put((req,res,next) =>{
+.put(authenticate.verifyUser,(req,res,next) =>{
     res.end("PUT method is not allowed at /leaders/");
 })
-.delete((req,res,next) => {
+.delete(authenticate.verifyUser,(req,res,next) => {
    Leaders.remove({})
    .then((resp) =>{
     res.statusCode = 201;
@@ -47,10 +48,10 @@ leaderRouter.route('/:leaderId')
     },(err) => next(err))
     .catch((err) => next(err));    
 })
-.post((req,res,next) => {
+.post(authenticate.verifyUser,(req,res,next) => {
     res.end("POST method is not allowed at /leaders/"+req.params.leaderId);  
 })
-.put((req,res,next) =>{
+.put(authenticate.verifyUser,(req,res,next) =>{
     Leaders.findByIdAndUpdate(req.params.leaderId,{ $set : req.body},{new : true})
     .then((leader) => {
         res.statusCode = 200;
@@ -59,7 +60,7 @@ leaderRouter.route('/:leaderId')
     },(err) => next(err))
     .catch((err) => next(err));
 })
-.delete((req,res,next) => {
+.delete(authenticate.verifyUser,(req,res,next) => {
    Leaders.findByIdAndRemove(req.params.leaderId)
    .then((resp) =>{
     res.statusCode = 201;

@@ -18,7 +18,7 @@ dishRouter.route('/')
     },(err) => next(err))
     .catch((err) => next(err));
 })
-.post(authenticate.verifyUser,(req,res,next) => {
+.post(authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next) => {
     Dishes.create(req.body)
     .then((dishes) => {
         console.log("CREATED SUCCESFULLY :::::::::::");
@@ -28,10 +28,10 @@ dishRouter.route('/')
     },(err) => next(err))
     .catch((err) => next(err));    
 })
-.put(authenticate.verifyUser,(req,res,next) => {
+.put(authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next) => {
     res.end("PUT method is not allowed at \\dishes");
 })
-.delete(authenticate.verifyUser,(req,res,next) => {
+.delete(authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next) => {
 Dishes.remove({})
 .then((resp) => {
     res.statusCode = 200;
@@ -55,10 +55,10 @@ dishRouter.route('/:dishId')
     },(err) => next(err))
     .catch((err) =>next(err));    
 })
-.post(authenticate.verifyUser,(req,res,next) => {
+.post(authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next) => {
     res.end(`POST operation is not supported on /dishes/${req.params.dishId}`);
 })
-.put(authenticate.verifyUser,(req,res,next) => {
+.put(authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next) => {
     Dishes.findByIdAndUpdate(req.params.dishId,{$set : req.body},{ new:true})
     .then((dish) => {
         console.log("UPDATED SUCCESFULLY :::::::::::");
@@ -68,7 +68,7 @@ dishRouter.route('/:dishId')
     },(err) => next(err))
     .catch((err) => next(err));    
 })
-.delete(authenticate.verifyUser,(req,res,next) => {
+.delete(authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next) => {
     Dishes.findByIdAndRemove(req.params.dishId)
     .then((resp) => {
         console.log("DELETED SUCCESFULLY :::::::::::");
@@ -101,7 +101,7 @@ dishRouter.route("/:dishId/comments")
     }, (err) => next(err))
     .catch((err) => next(err));    
 })
-.post(authenticate.verifyUser,(req,res,next) => {
+.post(authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if (dish != null) {
@@ -127,12 +127,12 @@ dishRouter.route("/:dishId/comments")
     }, (err) => next(err))
     .catch((err) => next(err));    
 })
-.put(authenticate.verifyUser,(req, res, next) => {
+.put(authenticate.verifyUser,authenticate.verifyAdmin,(req, res, next) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /dishes/'
         + req.params.dishId + '/comments');
 })
-.delete(authenticate.verifyUser,(req, res, next) => {
+.delete(authenticate.verifyUser,authenticate.verifyAdmin,(req, res, next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if (dish != null) {
@@ -187,6 +187,19 @@ dishRouter.route('/:dishId/comments/:commentId')
 .put(authenticate.verifyUser,(req, res, next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
+        console.log("author Id ::: ",dish.comments.id(req.params.commentId).author._id);
+        console.log("user id ::: ",req.user._id);
+        console.log(dish.comments.id(req.params.commentId).author._id.toString() == req.user._id.toString());
+        if(dish.comments.id(req.params.commentId).author._id.toString() !== req.user._id.toString())
+        {
+            //console.log("ran if");
+            err = new Error("You are not authorized");
+            err.status = 403;
+            return next(err);
+
+        }
+
+
         if (dish != null && dish.comments.id(req.params.commentId) != null) {
             if (req.body.rating) {
                 dish.comments.id(req.params.commentId).rating = req.body.rating;
@@ -222,6 +235,15 @@ dishRouter.route('/:dishId/comments/:commentId')
 .delete(authenticate.verifyUser,(req, res, next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
+        if(dish.comments.id(req.params.commentId).author._id.toString() !== req.user._id.toString())
+        {
+            //console.log("ran if");
+            err = new Error("You are not authorized");
+            err.status = 403;
+            return next(err);
+
+        }
+
         if (dish != null && dish.comments.id(req.params.commentId) != null) {
             dish.comments.id(req.params.commentId).remove();
             dish.save()
